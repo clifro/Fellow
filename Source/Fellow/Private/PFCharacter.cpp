@@ -96,6 +96,7 @@ void APFCharacter::FireWeapon()
 		FHitResult HitResult;
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(this);
+		QueryParams.bReturnPhysicalMaterial = true;
 		GetWorld()->LineTraceSingleByChannel(HitResult, GetAimStartLocation(), EndLocation, ECollisionChannel::ECC_Visibility, QueryParams);
 		//DrawDebugLine(GetWorld(), GetAimStartLocation(), EndLocation, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 1.0f);
 		Weapon->PlayFX();
@@ -142,7 +143,10 @@ void APFCharacter::ApplyDamage(FHitResult HitResult)
 		APFCharacter* character = Cast<APFCharacter>(hitActor);
 		if (character)
 		{
-			character->TakeDamage(CharacterData.Weapons.Damage, FDamageEvent(), GetController(), this);
+			if(HitResult.BoneName == "head")
+				character->TakeDamage(CharacterData.Weapons.Damage * 1000, FDamageEvent(), GetController(), this);
+			else
+				character->TakeDamage(CharacterData.Weapons.Damage, FDamageEvent(), GetController(), this);
 		}
 	}
 }
