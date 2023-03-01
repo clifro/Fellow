@@ -39,6 +39,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void Fire(FVector StartLocation, FVector Direction);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintImplementableEvent)
 		void PlayFX();
 };

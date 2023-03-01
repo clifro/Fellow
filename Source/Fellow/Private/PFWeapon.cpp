@@ -32,8 +32,3 @@ void APFWeapon::Fire(FVector StartLocation, FVector Direction)
 
 }
 
-void APFWeapon::PlayFX()
-{
-
-}
-

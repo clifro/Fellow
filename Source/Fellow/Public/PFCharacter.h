@@ -72,6 +72,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ShowHitEffects(FHitResult HitResult);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void PlayHitFX(FHitResult HitResult);
+
 	UFUNCTION(BlueprintCallable)
 		void ApplyDamage(FHitResult HitResult);
 

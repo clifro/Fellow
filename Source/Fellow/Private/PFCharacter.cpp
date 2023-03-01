@@ -92,14 +92,13 @@ void APFCharacter::FireWeapon()
 {
 	if (Weapon)
 	{
-		Weapon->Fire(GetAimStartLocation(), GetAimDirection());
-
 		FVector EndLocation = GetAimStartLocation() + GetAimDirection() * HitScanRange;
 		FHitResult HitResult;
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(this);
 		GetWorld()->LineTraceSingleByChannel(HitResult, GetAimStartLocation(), EndLocation, ECollisionChannel::ECC_Visibility, QueryParams);
 		//DrawDebugLine(GetWorld(), GetAimStartLocation(), EndLocation, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 1.0f);
+		Weapon->PlayFX();
 
 		if (HitResult.bBlockingHit) 
 		{
@@ -129,6 +128,8 @@ void APFCharacter::ShowHitEffects(FHitResult HitResult)
 				}
 			}
 		}
+
+		PlayHitFX(HitResult);
 	}
 }
 
