@@ -20,14 +20,22 @@ void APFCharacter::BeginPlay()
 
 	if (StatsTable)
 	{
-		CharacterData = *(StatsTable->FindRow<FCharacterData>(CharacterName, ""));
+		FCharacterData* characterTableData = StatsTable->FindRow<FCharacterData>(CharacterName, "");
 
-		if (GetCharacterMovement())
+		if (characterTableData)
 		{
-			GetCharacterMovement()->MaxWalkSpeed = CharacterData.Stats.WalkSpeed;
-			GetCharacterMovement()->JumpZVelocity = CharacterData.Stats.JumpSpeed;
-			GetCharacterMovement()->MaxWalkSpeedCrouched = CharacterData.Stats.CrouchSpeed;
-			Health = CharacterData.Stats.Health;
+			CharacterData = *characterTableData;
+
+			if (GetCharacterMovement())
+			{
+				GetCharacterMovement()->MaxWalkSpeed = CharacterData.Stats.WalkSpeed;
+				GetCharacterMovement()->JumpZVelocity = CharacterData.Stats.JumpSpeed;
+				GetCharacterMovement()->MaxWalkSpeedCrouched = CharacterData.Stats.CrouchSpeed;
+				Health = CharacterData.Stats.Health;
+
+				if (OnHealthUpdated.IsBound())
+					OnHealthUpdated.Broadcast(Health, CharacterData.Stats.Health);
+			}
 		}
 	}
 
@@ -90,7 +98,7 @@ FVector APFCharacter::GetAimStartLocation_Implementation()
 
 void APFCharacter::FireWeapon()
 {
-	if (Weapon)
+	if (IsAlive() && Weapon)
 	{
 		FVector EndLocation = GetAimStartLocation() + GetAimDirection() * HitScanRange;
 		FHitResult HitResult;
@@ -157,6 +165,9 @@ void APFCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class
 	{
 		Health -= Damage;
 
+		if (OnHealthUpdated.IsBound())
+			OnHealthUpdated.Broadcast(Health, CharacterData.Stats.Health);
+
 		if (Health <= 0)
 		{
 			if (GetMesh())
@@ -164,10 +175,19 @@ void APFCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class
 		}
 		else
 		{
-			if (GetMesh())
+			if (GetMesh() && GetMesh()->GetAnimInstance())
 			{
 				GetMesh()->GetAnimInstance()->Montage_Play(HitMontage);
 			}
 		}
 	}
+}
+
+void APFCharacter::AddHealth(float HealthToAdd)
+{
+	Health += HealthToAdd;
+	FMath::Clamp(Health, 0, CharacterData.Stats.Health);
+
+	if (OnHealthUpdated.IsBound())
+		OnHealthUpdated.Broadcast(Health, CharacterData.Stats.Health);
 }

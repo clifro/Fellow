@@ -10,6 +10,8 @@
 #include "Animation/AnimMontage.h"
 #include "PFCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthUpdated, float, CurrentHealth, float, MaxHealth);
+
 UCLASS()
 class FELLOW_API APFCharacter : public ACharacter
 {
@@ -27,8 +29,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FORCEINLINE bool IsAlive() { return Health > 0; }
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(BlueprintAssignable)
+		FOnHealthUpdated OnHealthUpdated;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		UDataTable* StatsTable;
@@ -77,6 +84,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void ApplyDamage(FHitResult HitResult);
+
+	UFUNCTION(BlueprintCallable)
+		void AddHealth(float HealthToAdd);
 
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
