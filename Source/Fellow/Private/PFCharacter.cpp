@@ -3,6 +3,9 @@
 #include "PFCharacter.h"
 #include "Logger.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Perception/AISense_Damage.h"
+#include "Perception/AISense_Hearing.h"
 #include "Components/StaticMeshComponent.h"
 // Sets default values
 APFCharacter::APFCharacter()
@@ -108,12 +111,12 @@ void APFCharacter::FireWeapon()
 		GetWorld()->LineTraceSingleByChannel(HitResult, GetAimStartLocation(), EndLocation, ECollisionChannel::ECC_Visibility, QueryParams);
 		//DrawDebugLine(GetWorld(), GetAimStartLocation(), EndLocation, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 1.0f);
 		Weapon->PlayFX();
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 100, this, 4000, "");
 
 		if (HitResult.bBlockingHit) 
 		{
 			ShowHitEffects(HitResult);
 			ApplyDamage(HitResult);
-			Logger::Log("Hit Object", FName(HitResult.GetActor()->GetActorNameOrLabel()));
 		}	
 	}
 }
@@ -151,10 +154,13 @@ void APFCharacter::ApplyDamage(FHitResult HitResult)
 		APFCharacter* character = Cast<APFCharacter>(hitActor);
 		if (character)
 		{
-			if(HitResult.BoneName == "head")
-				character->TakeDamage(CharacterData.Weapons.Damage * 1000, FDamageEvent(), GetController(), this);
+			if (HitResult.BoneName == "head")
+				UGameplayStatics::ApplyDamage(character, CharacterData.Weapons.Damage * 1000, GetController(), this, nullptr);
 			else
-				character->TakeDamage(CharacterData.Weapons.Damage, FDamageEvent(), GetController(), this);
+			{
+				UAISense_Damage::ReportDamageEvent(GetWorld(), character, this, CharacterData.Weapons.Damage, GetActorLocation(), HitResult.ImpactPoint);
+				UGameplayStatics::ApplyDamage(character, CharacterData.Weapons.Damage, GetController(), this, nullptr);
+			}
 		}
 	}
 }
