@@ -117,7 +117,7 @@ void APFCharacter::FireWeapon()
 		{
 			ShowHitEffects(HitResult);
 			ApplyDamage(HitResult);
-		}	
+		}
 	}
 }
 
